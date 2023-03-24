@@ -1,2 +1,9 @@
 # CIS434TermProject
-Term project for CIS 434 Software Engineering.
+
+## Group 8 Members
+
++ Christianna Brewer
++ Nicholas Filipovic
++ Corey Malloy
++ Hamza Srhiri
++ Salvador Murillo
