@@ -13,6 +13,7 @@ GREEN = '#6ba649'
 WHITE = '#f0f1ff'
 LIME = '#9fe04f'
 RED = '#e81a3c'
+BLUE = '#3f59b5'
 
 # Main menu screen frame
 class MainMenu(tk.Frame):
@@ -71,13 +72,39 @@ class Chessboard(tk.Frame):
         self['width'] = 819
         self['bg'] = GRAY
 
+        self.board = {}
         self.createBoard()
 
+    # Construct 8x8 chessboard
     def createBoard(self):
-        self.board = tk.Canvas(master=self, width=700, height=700, bg=GREEN)
-        self.board.pack(expand=True)
+        self.boardCanvas = tk.Canvas(master=self, width=712, height=712, bg=GREEN, borderwidth=0, highlightthickness=0)
+        self.boardCanvas.pack(expand=True)
 
+        SQUARE_SIZE = 89
+        for i in range(8): # Row
+            self.board[i] = {}
 
+            for j in range(8): # Column
+                xLeft = j * SQUARE_SIZE
+                yTop = i * SQUARE_SIZE
+                xRight = xLeft + SQUARE_SIZE
+                yBottom = yTop + SQUARE_SIZE
+
+                squareId = self.boardCanvas.create_rectangle(xLeft, yTop, xRight, yBottom, outline='')
+                square = self.boardCanvas.find_withtag(squareId)[0]
+
+                # WIP ------------------------------------------------------------------------------
+                self.board[i][j] = {
+                    'test': f'row: {i}, col: {j}'
+                }
+
+                print(self.board[i][j]['test'])
+
+                # Color board square if row and column sum is even
+                if ((i + j) % 2 == 0):
+                    self.boardCanvas.itemconfig(square, fill=WHITE)
+                else:
+                    self.boardCanvas.itemconfig(square, fill=BLUE)
 
 # Game screen frame
 class GameScreen(tk.Frame):
