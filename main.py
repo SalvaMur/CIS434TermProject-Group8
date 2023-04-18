@@ -11,6 +11,7 @@ BLACK = '#000000'
 GRAY = '#474747'
 GREEN = '#6ba649'
 WHITE = '#f0f1ff'
+DARK_WHITE = '#e6e6e6'
 LIME = '#9fe04f'
 RED = '#e81a3c'
 BLUE = '#3f59b5'
@@ -71,18 +72,18 @@ class Chessboard(tk.Frame):
         self.master = master
         self['width'] = 819
         self['bg'] = GRAY
-
         self.board = {}
-        self.createBoard()
-
-    # Construct 8x8 chessboard
-    def createBoard(self):
         self.boardCanvas = tk.Canvas(master=self, width=712, height=712, bg=GREEN, borderwidth=0, highlightthickness=0)
         self.boardCanvas.pack(expand=True)
 
+        self.createBoard()
+        self.createPieces()
+
+    # Construct 8x8 chessboard
+    def createBoard(self):
         SQUARE_SIZE = 89
         for i in range(8): # Row
-            self.board[i] = {}
+            self.board[i+1] = {}
 
             for j in range(8): # Column
                 xLeft = j * SQUARE_SIZE
@@ -90,21 +91,48 @@ class Chessboard(tk.Frame):
                 xRight = xLeft + SQUARE_SIZE
                 yBottom = yTop + SQUARE_SIZE
 
-                squareId = self.boardCanvas.create_rectangle(xLeft, yTop, xRight, yBottom, outline='')
-                square = self.boardCanvas.find_withtag(squareId)[0]
+                squareTag = self.boardCanvas.create_rectangle(xLeft, yTop, xRight, yBottom, outline='')
+                square = self.boardCanvas.find_withtag(squareTag)[0]
 
-                # WIP ------------------------------------------------------------------------------
-                self.board[i][j] = {
-                    'test': f'row: {i}, col: {j}'
+                self.board[i+1][j+1] = {
+                    'square': square,
+                    'center': {'x': (xRight-xLeft)/2 + xLeft, 'y': (yBottom-yTop)/2 + yTop},
+                    'piece': None,
+                    'pieceName': None,
+                    'pieceColor': None,
+                    'defendedByBlack': False,
+                    'defendedByWhite': False
                 }
-
-                print(self.board[i][j]['test'])
 
                 # Color board square if row and column sum is even
                 if ((i + j) % 2 == 0):
-                    self.boardCanvas.itemconfig(square, fill=WHITE)
+                    self.boardCanvas.itemconfig(square, fill=DARK_WHITE)
                 else:
                     self.boardCanvas.itemconfig(square, fill=BLUE)
+
+    def createPieces(self):
+        startPos = {
+            1:{1:'Rook', 2:'Knight', 3:'Bishop', 4:'Queen', 5:'King', 6:'Bishop', 7:'Knight', 8:'Rook'},
+            2:{1:'Pawn', 2: 'Pawn', 3:'Pawn', 4:'Pawn', 5:'Pawn', 6:'Pawn', 7:'Pawn', 8:'Pawn'},
+            7:{1:'Pawn', 2: 'Pawn', 3:'Pawn', 4:'Pawn', 5:'Pawn', 6:'Pawn', 7:'Pawn', 8:'Pawn'},
+            8:{1:'Rook', 2:'Knight', 3:'Bishop', 4:'Queen', 5:'King', 6:'Bishop', 7:'Knight', 8:'Rook'}
+        }
+
+        # Initialize chess pieces on board
+        self.imageRef = []
+        for i in startPos:
+            color = 'B' if (i <= 2) else 'W'
+            for j in startPos[i]:
+                self.imageRef.append(tk.PhotoImage(file=f'img/{color}_{startPos[i][j]}.png'))
+                pieceTag = self.boardCanvas.create_image(
+                    self.board[i][j]['center']['x'], self.board[i][j]['center']['y'], 
+                    image=self.imageRef[len(self.imageRef) - 1]
+                )
+                piece = self.boardCanvas.find_withtag(pieceTag)[0]
+
+                self.board[i][j]['piece'] = piece
+                self.board[i][j]['pieceName'] = startPos[i][j]
+                self.board[i][j]['pieceColor'] = color
 
 # Game screen frame
 class GameScreen(tk.Frame):
@@ -136,7 +164,7 @@ class GameScreen(tk.Frame):
         self.exitButton['text'] = 'Exit'
         self.exitButton.grid(row=0, column=0, padx=20)
 
-        # Packe game menu frame in game screen
+        # Pack game menu frame in game screen
         self.gameMenu.pack(expand=True, fill='both', side='left')
         self.gameMenu.pack_propagate(0)
     
@@ -149,7 +177,7 @@ class ChessApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Very Basic Chess')
-        #self.resizable(width=False, height=False)
+        self.resizable(width=False, height=False)
         self.score = {
             'player1': {
                 'wins': 0, 'losses': 0, 'ties': 0
