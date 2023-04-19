@@ -110,7 +110,7 @@ class ChessApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('Very Basic Chess')
-        self.resizable(width=False, height=False)
+        # self.resizable(width=False, height=False)
         self.score = {
             'player1': {
                 'wins': 0, 'losses': 0, 'ties': 0

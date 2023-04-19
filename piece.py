@@ -6,7 +6,19 @@ class Piece:
         self.canvasRef = canvasRef
         self.row = row
         self.col = col
+
         self.isFirstMove = True
+        self.moveTable = {}
 
     def moveTo(self):
         None
+
+    # WIP -------------------------------------------------
+    def makeMoves(self, board):
+        self.moveTable.clear()
+        for i in board:
+            for j in board[i]:
+                if (board[i][j]['pieceColor'] == self.color):
+                    continue
+                
+                self.moveTable[board[i][j]['squareTag']] = {'row': i, 'col': j}

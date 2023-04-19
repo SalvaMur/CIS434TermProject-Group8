@@ -56,6 +56,7 @@ class Chessboard(tk.Frame):
 
                 self.board[i+1][j+1] = {
                     'square': square,
+                    'squareTag': squareTag,
                     'center': {'x': (xRight-xLeft)/2 + xLeft, 'y': (yBottom-yTop)/2 + yTop},
                     'piece': None,
                     'pieceRef': None,
@@ -103,47 +104,68 @@ class Chessboard(tk.Frame):
                     self.board[i][j]['defendedByBlack'] = False
                     self.board[i][j]['defendedByWhite'] = False
 
+        for piece in self.pieces:
+            if (self.pieces[piece].color == 'W'): # WIP -----------------------------
+                self.pieces[piece].makeMoves(self.board)
+
     def onClick(self, event):
         tag = self.boardCanvas.find_withtag('current')[0]
 
-        if (tag in self.pieces and self.pieces[tag] is not self.selPiece and 
-            self.pieces[tag].color is 'W'):
+        if (tag in self.pieces):
+            newPiece = self.pieces[tag]
+        else:
+            newPiece = None
 
-            if (self.selPiece is not None):
+        # New player piece selected
+        if (newPiece is not None and newPiece is not self.selPiece and 
+            newPiece.color == 'W'):
+
+            if (self.selPiece is not None): # Dehighlight previous piece
                 row = self.selPiece.row
                 col = self.selPiece.col
                 oldSquare = self.board[row][col]['square']
                 self.boardCanvas.itemconfig(oldSquare, fill=WHITE if ((row + col) % 2 == 0) else BLUE)
 
-            self.selPiece = self.pieces[tag]
+            self.selPiece = newPiece
+            newSquare = self.board[self.selPiece.row][self.selPiece.col]['square']
+            self.boardCanvas.itemconfig(newSquare, fill=LIME) # Highlight piece selected
+            
+            moveTable = self.selPiece.moveTable
 
-            # WIP ---------------------------------------------------------------------------
-            for i in self.board:
-                for j in self.board:
-                    square = self.board[i][j]['square']
-                    piece = self.board[i][j]['piece']
+            for key in moveTable:
+                row = moveTable[key]['row']
+                col = moveTable[key]['col']
 
-                    if (piece is not None and self.selPiece is piece):
-                        self.boardCanvas.itemconfig(square, fill=LIME)
+                square = self.board[row][col]['square']
+                piece = self.board[row][col]['piece']
 
-                    # A piece is present on square
-                    elif (piece is not None and piece.color == 'B'):
-                        if ((i + j) % 2 == 0):
-                            self.boardCanvas.itemconfig(square, fill=RED)
+                # An enemy piece is present on square
+                if (piece is not None and piece.color == 'B'):
+                    if ((row + col) % 2 == 0):
+                        self.boardCanvas.itemconfig(square, fill=RED)
 
-                        else:
-                            self.boardCanvas.itemconfig(square, fill=DARK_RED)
+                    else:
+                        self.boardCanvas.itemconfig(square, fill=DARK_RED)
 
-                    elif (piece is None):
-                        if ((i + j) % 2 == 0):
-                            self.boardCanvas.itemconfig(square, fill=MUSTARD)
+                elif (piece is None):
+                    if ((row + col) % 2 == 0):
+                        self.boardCanvas.itemconfig(square, fill=MUSTARD)
 
-                        else:
-                            self.boardCanvas.itemconfig(square, fill=PUKE_GREEN)
+                    else:
+                        self.boardCanvas.itemconfig(square, fill=PUKE_GREEN)
 
             print(f'{self.selPiece.color}_{self.selPiece.type}, Row: {self.selPiece.row}, Col: {self.selPiece.col}')
         
+        # Selected available square, or enemy piece on available square
+        elif (self.selPiece is not None and 
+            (tag in self.selPiece.moveTable or 
+            newPiece is not None and self.board[newPiece.row][newPiece.col]['squareTag'] in self.selPiece.moveTable)):
+            
+            print('An available square was selected!')
+
+        # Old player piece selected again, or unavailbe square selected
         else:
+            print(tag)
             self.selPiece = None
 
             for i in self.board:
