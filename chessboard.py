@@ -1,11 +1,6 @@
 import tkinter as tk
 from piece import Piece
 
-# Font styles
-LARGE_FONT = 'Arial 40 bold'
-BUTTON_FONT = 'Arial 14'
-LIST_FONT = 'Arial 16'
-
 # Colors
 BLACK = '#000000'
 GRAY = '#474747'
@@ -34,6 +29,8 @@ class Chessboard(tk.Frame):
         self.pieces = {}
         self.selPiece = None # Keeps track on what piece is selected. Modified by piece class
         
+        self.isPlayerTurn = True
+
         self.createBoard()
         self.createPieces()
 
@@ -60,6 +57,7 @@ class Chessboard(tk.Frame):
                     'center': {'x': (xRight-xLeft)/2 + xLeft, 'y': (yBottom-yTop)/2 + yTop},
                     'piece': None,
                     'pieceRef': None,
+                    'pieceTag': None,
                     'pieceName': None,
                     'pieceColor': None,
                     'defendedByBlack': True if (i + 1 <= 3) else False,
@@ -91,12 +89,13 @@ class Chessboard(tk.Frame):
                     image=self.pieceImage[len(self.pieceImage) - 1]
                 )
                 pieceRef = self.boardCanvas.find_withtag(pieceTag)[0]
-                piece = Piece(pieceRef, startPos[i][j], color, self.boardCanvas, i, j)
+                piece = Piece(pieceRef, pieceTag, startPos[i][j], color, self.boardCanvas, i, j)
 
                 self.pieces[pieceTag] = piece
 
                 self.board[i][j]['piece'] = piece
                 self.board[i][j]['pieceRef'] = pieceRef
+                self.board[i][j]['pieceTag'] = pieceTag
                 self.board[i][j]['pieceName'] = startPos[i][j]
                 self.board[i][j]['pieceColor'] = color
 
@@ -118,13 +117,13 @@ class Chessboard(tk.Frame):
 
         # New player piece selected
         if (newPiece is not None and newPiece is not self.selPiece and 
-            newPiece.color == 'W'):
+            newPiece.color == ('W' if self.isPlayerTurn else 'B')):
 
             if (self.selPiece is not None): # Dehighlight previous piece
                 row = self.selPiece.row
                 col = self.selPiece.col
                 oldSquare = self.board[row][col]['square']
-                self.boardCanvas.itemconfig(oldSquare, fill=WHITE if ((row + col) % 2 == 0) else BLUE)
+                self.boardCanvas.itemconfig(oldSquare, fill= WHITE if ((row + col) % 2 == 0) else BLUE)
 
             self.selPiece = newPiece
             newSquare = self.board[self.selPiece.row][self.selPiece.col]['square']
@@ -140,7 +139,7 @@ class Chessboard(tk.Frame):
                 piece = self.board[row][col]['piece']
 
                 # An enemy piece is present on square
-                if (piece is not None and piece.color == 'B'):
+                if (piece is not None and piece.color == ('B' if self.isPlayerTurn else 'W')):
                     if ((row + col) % 2 == 0):
                         self.boardCanvas.itemconfig(square, fill=RED)
 
@@ -161,19 +160,55 @@ class Chessboard(tk.Frame):
             (tag in self.selPiece.moveTable or 
             newPiece is not None and self.board[newPiece.row][newPiece.col]['squareTag'] in self.selPiece.moveTable)):
             
+            if (tag in self.selPiece.moveTable):
+                row = self.selPiece.moveTable[tag]['row']
+                col = self.selPiece.moveTable[tag]['col']
+
+            else:
+                row = newPiece.row
+                col = newPiece.col
+
+            # ADD MORE HERE --------------------------------------------------------
+
+            self.clearSelection()
+
+            xOffset = self.board[row][col]['center']['x']
+            yOffset = self.board[row][col]['center']['y']
+            self.selPiece.moveTo(row, col, xOffset, yOffset, self.board, self.pieces)
+            self.selPiece = None
+
+            self.transistionTurn()
+
             print('An available square was selected!')
 
         # Old player piece selected again, or unavailbe square selected
         else:
-            print(tag)
+            if (self.selPiece is not None): # Dehighlight current selection
+                self.clearSelection()
+            
             self.selPiece = None
-
-            for i in self.board:
-                for j in self.board[i]:
-                    square = self.board[i][j]['square']
-                    if ((i + j) % 2 == 0):
-                            self.boardCanvas.itemconfig(square, fill=DARK_WHITE)
-                    else:
-                            self.boardCanvas.itemconfig(square, fill=BLUE)
-
             print('Selected empty square')
+
+    # Used for clearing selection highlight
+    def clearSelection(self):
+        row = self.selPiece.row
+        col = self.selPiece.col
+        square = self.board[row][col]['square']
+        self.boardCanvas.itemconfig(square, fill= WHITE if ((row + col) % 2 == 0) else BLUE)
+
+        moveTable = self.selPiece.moveTable
+        for key in moveTable:
+            row = moveTable[key]['row']
+            col = moveTable[key]['col']
+            square = self.board[row][col]['square']
+            if ((row + col) % 2 == 0):
+                self.boardCanvas.itemconfig(square, fill=DARK_WHITE)
+            else:
+                self.boardCanvas.itemconfig(square, fill=BLUE)
+
+    def transistionTurn(self):
+        self.isPlayerTurn = not self.isPlayerTurn
+
+        for piece in self.pieces:
+            if (self.pieces[piece].color == ('W' if self.isPlayerTurn else 'B')):
+                self.pieces[piece].makeMoves(self.board)
