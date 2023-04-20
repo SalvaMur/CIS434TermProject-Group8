@@ -1,5 +1,5 @@
 import tkinter as tk
-from piece import Piece
+from piece import createPiece
 
 # Colors
 BLACK = '#000000'
@@ -27,6 +27,8 @@ class Chessboard(tk.Frame):
         self.boardCanvas.bind('<Button-1>', self.onClick)
         
         self.pieces = {}
+        self.w_King = None # Reference to white king
+        self.b_King = None # Reference to black king
         self.selPiece = None # Keeps track on what piece is selected. Modified by piece class
         
         self.isPlayerTurn = True
@@ -60,8 +62,8 @@ class Chessboard(tk.Frame):
                     'pieceTag': None,
                     'pieceName': None,
                     'pieceColor': None,
-                    'defendedByBlack': True if (i + 1 <= 3) else False,
-                    'defendedByWhite': True if (i + 1 >= 6) else False
+                    'defensesByBlack': 0,
+                    'defensesByWhite': 0
                 }
 
                 # Color board square if row and column sum is even
@@ -84,12 +86,14 @@ class Chessboard(tk.Frame):
             color = 'B' if (i <= 2) else 'W'
             for j in startPos[i]:
                 self.pieceImage.append(tk.PhotoImage(file=f'img/{color}_{startPos[i][j]}.png'))
+
                 pieceTag = self.boardCanvas.create_image(
                     self.board[i][j]['center']['x'], self.board[i][j]['center']['y'], 
                     image=self.pieceImage[len(self.pieceImage) - 1]
                 )
                 pieceRef = self.boardCanvas.find_withtag(pieceTag)[0]
-                piece = Piece(pieceRef, pieceTag, startPos[i][j], color, self.boardCanvas, i, j)
+
+                piece = createPiece(pieceRef, pieceTag, startPos[i][j], color, self.boardCanvas, i, j)
 
                 self.pieces[pieceTag] = piece
 
@@ -99,9 +103,11 @@ class Chessboard(tk.Frame):
                 self.board[i][j]['pieceName'] = startPos[i][j]
                 self.board[i][j]['pieceColor'] = color
 
-                if (startPos[i][j] == 'Rook'):
-                    self.board[i][j]['defendedByBlack'] = False
-                    self.board[i][j]['defendedByWhite'] = False
+                if (startPos[i][j] == 'King' and color == 'W'):
+                    self.w_King = piece
+
+                elif (startPos[i][j] == 'King' and color == 'B'):
+                    self.b_King = piece
 
         for piece in self.pieces:
             if (self.pieces[piece].color == 'W'): # WIP -----------------------------
@@ -120,6 +126,7 @@ class Chessboard(tk.Frame):
             newPiece.color == ('W' if self.isPlayerTurn else 'B')):
 
             if (self.selPiece is not None): # Dehighlight previous piece
+                self.clearSelection()
                 row = self.selPiece.row
                 col = self.selPiece.col
                 oldSquare = self.board[row][col]['square']
@@ -172,6 +179,17 @@ class Chessboard(tk.Frame):
 
             self.clearSelection()
 
+            # FOR TEST ####################################################
+            if (self.isPlayerTurn):
+                if (self.b_King is self.board[row][col]['piece']):
+                    self.b_King = None
+
+            else:
+                if (self.w_King is self.board[row][col]['piece']):
+                    self.w_King = None
+
+            ###############################################################
+
             xOffset = self.board[row][col]['center']['x']
             yOffset = self.board[row][col]['center']['y']
             self.selPiece.moveTo(row, col, xOffset, yOffset, self.board, self.pieces)
@@ -206,7 +224,22 @@ class Chessboard(tk.Frame):
             else:
                 self.boardCanvas.itemconfig(square, fill=BLUE)
 
+    # When turn ends
     def transistionTurn(self):
+
+        # FOR TEST #####################################################
+        if (self.isPlayerTurn):
+            if (self.b_King is None):
+                print('WHITE WINS')
+                self.master.updateWinner('player1', 'player2')
+
+        else:
+            if (self.w_King is None):
+                print('BLACK WINS')
+                self.master.updateWinner('player2', 'player1')
+
+        ###############################################################
+
         self.isPlayerTurn = not self.isPlayerTurn
 
         for piece in self.pieces:

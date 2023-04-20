@@ -4,6 +4,7 @@ from chessboard import Chessboard
 
 # Font styles
 LARGE_FONT = 'Arial 40 bold'
+MEDIUM_FONT = 'Arial 30'
 BUTTON_FONT = 'Arial 14'
 LIST_FONT = 'Arial 16'
 
@@ -101,6 +102,85 @@ class GameScreen(tk.Frame):
         self.gameMenu.pack(expand=True, fill='both', side='left')
         self.gameMenu.pack_propagate(0)
     
+    def updateWinner(self, winner, loser):
+        # Update score
+        newScore = self.master.score
+        newScore[winner]['wins'] += 1
+        newScore[loser]['losses'] += 1
+        self.master.score = newScore
+
+        EndScreen(master=self.master, winner=winner, loser=loser).pack(expand=True)
+        self.destroy()
+
+    def goToMenu(self):
+        MainMenu(master=self.master).pack(expand=True)
+        self.destroy()
+
+# End screen frame
+class EndScreen(tk.Frame):
+    def __init__(self, master, winner, loser):
+        super().__init__(master)
+        self.master = master
+        self.master['bg'] = GRAY
+        self['bg'] = GREEN
+
+        self.winner = winner
+        self.loser = loser
+
+        self.master.geometry('1365x768') # Change window geometry
+
+        xOffset = (self.master.winfo_screenwidth() // 2) - (1365 // 2)
+        yOffset = (self.master.winfo_screenheight() // 2) - (768 // 2)
+        self.master.geometry(f'+{xOffset}+{yOffset}') # Center window
+
+        self.createEndScreen()
+
+    def createEndScreen(self):
+        score = self.master.score
+        p1Wins = score['player1']['wins']
+        p1Loss = score['player1']['losses']
+        p1Ties = score['player1']['ties']
+
+        p2Wins = score['player2']['wins']
+        p2Loss = score['player2']['losses']
+        p2Ties = score['player2']['ties']
+
+        bWins = score['bot']['wins']
+        bLoss = score['bot']['losses']
+        bTies = score['bot']['ties']
+
+        self.result = tk.Label(master=self, bg=GREEN, fg=WHITE, font=LARGE_FONT, padx=40, pady=40)
+        self.result['text'] = f'{self.winner} wins! {self.loser} losses!'
+        self.result.pack()
+
+        self.score = tk.Label(master=self, bg=GREEN, fg=WHITE, font=MEDIUM_FONT, padx=40, pady=40)
+        self.score['text'] = f'Player 1: {p1Wins} Win(s), {p1Loss} Loss(es), {p1Ties} Tie(s)\n'
+        self.score['text'] += f'Player 2: {p2Wins} Win(s), {p2Loss} Loss(es), {p2Ties} Tie(s)\n'
+        self.score['text'] += f'Bot: {bWins} Win(s), {bLoss} Loss(es), {bTies} Tie(s)'
+        self.score.pack()
+
+        # Frame that holds buttons and dropdown list
+        self.selFrame = tk.Frame(master=self, bg=GREEN, pady=40)
+
+        # Menu button
+        self.menuBtn = tk.Button(master=self.selFrame, command=self.goToMenu)
+        self.menuBtn.configure(bg=LIME, fg=GRAY, font=BUTTON_FONT)
+        self.menuBtn['text'] = 'Return To Menu'
+        self.menuBtn.grid(row=0, column=0, padx=20)
+
+        # Rematch button
+        self.rematchBtn = tk.Button(master=self.selFrame, command=self.goToGame)
+        self.rematchBtn.configure(bg=LIME, fg=GRAY, font=BUTTON_FONT)
+        self.rematchBtn['text'] = 'Rematch'
+        self.rematchBtn.grid(row=0, column=1, padx=20)
+
+        # Pack selection frame to Menu screen
+        self.selFrame.pack()
+
+    def goToGame(self):
+        GameScreen(master=self.master).pack(expand=True, fill='both')
+        self.destroy()
+
     def goToMenu(self):
         MainMenu(master=self.master).pack(expand=True)
         self.destroy()
