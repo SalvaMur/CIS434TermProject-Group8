@@ -24,7 +24,7 @@ class Piece:
 
             oldPiece = board[newRow][newCol]['piece']
             oldColor = board[newRow][newCol]['pieceColor']
-
+            
             # Vacate old square
             board[oldRow][oldCol]['piece'] = None
             board[oldRow][oldCol]['pieceColor'] = None
@@ -32,15 +32,19 @@ class Piece:
             # Update new square
             board[newRow][newCol]['piece'] = self
             board[newRow][newCol]['pieceColor'] = self.color
-
+            
+            # Update King Square to the simulation move if moving king
+            if board[newRow][newCol]['piece'] == myKing:
+                kingSquare = board[newRow][newCol]['squareID']
+            
             # Check if an enemy piece can check 'myKing' after simulated move
             for piece in pieces:
                 if (newRow == piece.row and newCol == piece.col): # If piece was taken by simulated move, skip it
                     print(f'[SIM]: {piece.color}_{piece.type} can be taken by {self.color}_{self.type} at {newRow}x{newCol}.')
                     continue
-
+                    
                 piece.makeMoves(board) # Simulate enemy moves
-
+                
                 if (kingSquare in piece.moveTable):
                     toDel.append(move)
                     print(f'[SIM]: {piece.color}_{piece.type} can check {myKing.color}_King from {self.color}_{self.type}\'s move to {newRow}x{newCol}!')
@@ -55,7 +59,8 @@ class Piece:
 
         for move in toDel:
             del self.moveTable[move]
-
+        
+            
     def addMove(self, board, row, col):
         squareID = board[row][col]['squareID']
         self.moveTable[squareID] = {
