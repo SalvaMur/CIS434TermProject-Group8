@@ -150,13 +150,68 @@ class EndScreen(tk.Frame):
         bTies = score['bot']['ties']
 
         self.result = tk.Label(master=self, bg=GREEN, fg=WHITE, font=LARGE_FONT, padx=40, pady=40)
-        self.result['text'] = f'{self.winner} wins! {self.loser} losses!'
+        if self.winner == 'player1' and self.loser == 'player2':
+            self.result['text'] = f'Player 1 wins! Player 2 losses!'
+        elif self.winner == 'player2' and self.loser == 'player1':
+            self.result['text'] = f'Player 2 wins! Player 1 losses!'
+        elif self.winner == 'player1' and self.loser == 'bot':
+            self.result['text'] = f'Player 1 wins! Bot losses!'
+        elif self.winner == 'bot' and self.loser == 'player1':
+            self.result['text'] = f'Bot wins! Player 1 losses!'
         self.result.pack()
 
         self.score = tk.Label(master=self, bg=GREEN, fg=WHITE, font=MEDIUM_FONT, padx=40, pady=40)
-        self.score['text'] = f'Player 1: {p1Wins} Win(s), {p1Loss} Loss(es), {p1Ties} Tie(s)\n'
-        self.score['text'] += f'Player 2: {p2Wins} Win(s), {p2Loss} Loss(es), {p2Ties} Tie(s)\n'
-        self.score['text'] += f'Bot: {bWins} Win(s), {bLoss} Loss(es), {bTies} Tie(s)'
+        if p1Wins == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Win, {p1Loss} Losses, {p1Ties} Ties\n'
+        elif p1Loss == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Wins, {p1Loss} Loss, {p1Ties} Ties\n'
+        elif p1Ties == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Wins, {p1Loss} Losses, {p1Ties} Tie\n'
+        elif p1Wins == 1 and p1Loss == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Win, {p1Loss} Loss, {p1Ties} Ties\n'
+        elif p1Wins == 1 and p1Ties == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Win, {p1Loss} Losses, {p1Ties} Tie\n'
+        elif p1Loss == 1 and p1Ties == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Wins, {p1Loss} Loss, {p1Ties} Tie\n'
+        elif p1Wins ==1 and p1Loss == 1 and p1Ties == 1:
+            self.score['text'] = f'Player 1: {p1Wins} Win, {p1Loss} Losses, {p1Ties} Ties\n'
+        else:
+            self.score['text'] = f'Player 1: {p1Wins} Wins, {p1Loss} Losses, {p1Ties} Ties\n'
+            
+        if p2Wins == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Win, {p2Loss} Losses, {p2Ties} Ties\n'
+        elif p2Loss == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Wins, {p2Loss} Loss, {p2Ties} Ties\n'
+        elif p2Ties == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Wins, {p2Loss} Losses, {p2Ties} Tie\n'
+        elif p2Wins == 1 and p2Loss == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Win, {p2Loss} Loss, {p2Ties} Ties\n'
+        elif p2Wins == 1 and p2Ties == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Win, {p2Loss} Losses, {p2Ties} Tie\n'
+        elif p2Loss == 1 and p2Ties == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Wins, {p2Loss} Loss, {p2Ties} Tie\n'
+        elif p2Wins ==1 and p2Loss == 1 and p2Ties == 1:
+            self.score['text'] += f'Player 2: {p2Wins} Win, {p2Loss} Loss, {p2Ties} Tie\n'
+        else:
+            self.score['text'] += f'Player 2: {p2Wins} Win(s), {p2Loss} Loss(es), {p2Ties} Tie(s)\n'
+            
+        if bWins == 1:
+            self.score['text'] += f'Bot: {bWins} Win, {bLoss} Losses, {bTies} Ties'
+        elif bLoss == 1:
+            self.score['text'] += f'Bot: {bWins} Wins, {bLoss} Loss, {bTies} Ties'
+        elif bTies == 1:
+            self.score['text'] += f'Bot: {bWins} Wins, {bLoss} Losses, {bTies} Tie'
+        elif bWins == 1 and bLoss == 1:
+            self.score['text'] += f'Bot: {bWins} Win, {bLoss} Loss, {bTies} Ties'
+        elif bWins == 1 and bTies == 1:
+            self.score['text'] += f'Bot: {bWins} Win, {bLoss} Losses, {bTies} Tie'
+        elif bLoss == 1 and bTies == 1:
+            self.score['text'] += f'Bot: {bWins} Wins, {bLoss} Loss, {bTies} Tie'
+        elif bWins ==1 and bLoss == 1 and bTies == 1:
+            self.score['text'] += f'Bot: {bWins} Win, {bLoss} Loss, {bTies} Tie'
+        else:
+            self.score['text'] += f'Bot: {bWins} Wins, {bLoss} Losses, {bTies} Ties'
+
         self.score.pack()
 
         # Frame that holds buttons and dropdown list
