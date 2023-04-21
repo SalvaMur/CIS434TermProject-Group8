@@ -41,8 +41,13 @@ class Piece:
 
                 piece.makeMoves(board) # Simulate enemy moves
 
+                # If simulated piece is the king himself, update kingSquare
+                if (self is myKing):
+                    kingSquare = board[newRow][newCol]['squareID']
+
+                # If king is still in check after simulated move, remove move from 'moveTable'
                 if (kingSquare in piece.moveTable):
-                    toDel.append(move)
+                    toDel.append(move) if (move not in toDel) else None
                     print(f'[SIM]: {piece.color}_{piece.type} can check {myKing.color}_King from {self.color}_{self.type}\'s move to {newRow}x{newCol}!')
 
             # Revert potential move spot back for further simulations
@@ -464,6 +469,7 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, color, row, col):
         super().__init__('King', color, row, col)
+        self.inCheck = False
 
     # King's Move Generation ===========================================================================================================
     def makeMoves(self, board):
@@ -532,10 +538,6 @@ class King(Piece):
         if (col <= 8):
             if (board[row][col]['pieceColor'] != self.color):
                 self.addMove(board, row, col) # Add move to move table
-
-    # Check if King is in check
-    def inCheck(self):
-        None
 
 # Function that returns a piece based on parameters
 def createPiece(type, color, row, col):

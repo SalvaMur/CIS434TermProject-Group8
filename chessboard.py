@@ -32,12 +32,14 @@ class Chessboard(tk.Frame):
         
         self.pieces = [] # Direct references to pieces
         self.piecesTK = {} # References to pieces on board for GUI
+
         self.squares = {} # References to squares on board with canvas tag for GUI
+
         self.w_King = None # Reference to white king
         self.b_King = None # Reference to black king
         self.selPiece = None # Keeps track on what piece is selected. Modified by piece class
         
-        self.isPlayerTurn = True
+        self.isPlayerTurn = True # Keep track of player turns
 
         self.createBoard()
         self.createPieces()
@@ -129,8 +131,12 @@ class Chessboard(tk.Frame):
         for piece in self.pieces:
             piece.makeMoves(self.board)
 
+    #######################################################################################################################################################################################
+    # BOARD INTERACTION METHODS ###########################################################################################################################################################
+    #######################################################################################################################################################################################
+
     def onClick(self, event):
-        tag = self.boardCanvas.find_withtag('current')[0]
+        tag = self.boardCanvas.find_withtag('current')[0] # Get GUI tag for object clicked
 
         # If player selected a piece
         if (tag in self.piecesTK):
@@ -183,7 +189,7 @@ class Chessboard(tk.Frame):
                     else:
                         self.boardCanvas.itemconfig(square, fill=PUKE_GREEN)
 
-            print(f'{self.selPiece.color}_{self.selPiece.type}, Row: {self.selPiece.row}, Col: {self.selPiece.col}')
+            print(f'[INPUT]: Selected {self.selPiece.color}_{self.selPiece.type} at {self.selPiece.row}x{self.selPiece.col}')
         
         # Selected available square, or enemy piece on available square
         elif (self.selPiece is not None and (selSquare in self.selPiece.moveTable or 
@@ -197,31 +203,17 @@ class Chessboard(tk.Frame):
                 row = newPiece.row
                 col = newPiece.col
 
-            # MAYBE TURN BELOW INTO A METHOD?
-            # ADD MORE HERE --------------------------------------------------------
-
-            self.clearSelection()
-
-            # FOR TEST ####################################################
-            if (self.isPlayerTurn):
-                if (self.b_King is self.board[row][col]['piece']):
-                    self.b_King = None
-
-            else:
-                if (self.w_King is self.board[row][col]['piece']):
-                    self.w_King = None
-
-            ###############################################################
+            self.clearSelection() # Dehighlight selectable squares
 
             x = self.boardTK[row][col]['center']['x']
             y = self.boardTK[row][col]['center']['y']
 
-            self.movePiece(self.selPiece, row, col, x, y)
-            self.selPiece = None
+            self.movePiece(self.selPiece, row, col, x, y) # Handle piece movement
+            self.selPiece = None # Deselect piece
 
-            self.transistionTurn()
+            self.transistionTurn() # Handle end of turn
 
-            print('An available square was selected!')
+            print(f'[INPUT]: Selected square at {row}x{col}')
 
         # Old player piece selected again, or unavailbe square selected
         else:
@@ -229,7 +221,7 @@ class Chessboard(tk.Frame):
                 self.clearSelection()
             
             self.selPiece = None
-            print('Selected empty square')
+            print('[INPUT]: Selected empty square')
 
     def movePiece(self, piece, newRow, newCol, x, y):
         oldRow = piece.row
@@ -284,37 +276,50 @@ class Chessboard(tk.Frame):
     # When turn ends
     def transistionTurn(self):
 
-        # FOR TEST #####################################################
-        if (self.isPlayerTurn):
-            if (self.b_King is None):
-                print('WHITE WINS')
-                self.master.updateWinner('player1', 'player2')
-
-        else:
-            if (self.w_King is None):
-                print('BLACK WINS')
-                self.master.updateWinner('player2', 'player1')
-
-        ###############################################################
-
         # Generate moves for current player first, then next player
         nextPieces = []
+        nextKing = self.b_King if (self.isPlayerTurn) else self.w_King
+        nextKingSquare = self.board[nextKing.row][nextKing.col]['squareID']
         for piece in self.pieces:
             if (self.isPlayerTurn and piece.color == 'W'):
                 piece.makeMoves(self.board)
+
+                if (nextKingSquare in piece.moveTable):
+                    nextKing.inCheck = True
             
             elif (not self.isPlayerTurn and piece.color == 'B'):
                 piece.makeMoves(self.board)
 
+                if (nextKingSquare in piece.moveTable):
+                    nextKing.inCheck = True
+
             else:
                 nextPieces.append(piece)
 
-        nextKing = self.b_King if (self.isPlayerTurn) else self.w_King
+        canMove = []
         for piece in nextPieces:
             piece.makeMoves(self.board) # Generate general moves
 
             # Restrict illegal moves
             enemies = list(filter(lambda enemy: enemy.color != nextKing.color, deepcopy(self.pieces)))
             piece.checkMoves(deepcopy(self.board), enemies, nextKing)
+
+            # If piece has moves, put piece into 'canMove' list
+            if (len(piece.moveTable) != 0):
+                canMove.append(piece)
+
+        # If next player can't move any of their pieces, check for tie or loss
+        if (len(canMove) == 0):
+
+            # Next player's king is currently in check
+            if (nextKing.inCheck):
+                print('[RESULT]: ', 'White Wins!' if (self.isPlayerTurn) else 'Black Wins!')
+                result = ('player1', 'player2') if (self.isPlayerTurn) else ('player2', 'player1')
+                self.master.updateWinner(result[0], result[1], False)
+
+            # It is a draw
+            else:
+                print('[RESULT]: It is a draw!')
+                self.master.updateWinner('player1', 'player2', True)
 
         self.isPlayerTurn = not self.isPlayerTurn # Transition turn

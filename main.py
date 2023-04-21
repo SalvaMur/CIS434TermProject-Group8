@@ -102,14 +102,21 @@ class GameScreen(tk.Frame):
         self.gameMenu.pack(expand=True, fill='both', side='left')
         self.gameMenu.pack_propagate(0)
     
-    def updateWinner(self, winner, loser):
-        # Update score
-        newScore = self.master.score
-        newScore[winner]['wins'] += 1
-        newScore[loser]['losses'] += 1
-        self.master.score = newScore
+    def updateWinner(self, winner, loser, isDraw):
 
-        EndScreen(master=self.master, winner=winner, loser=loser).pack(expand=True)
+        # Update player stats for draw game
+        if(isDraw):
+            newScore = self.master.score
+            newScore[winner]['ties'] += 1
+            newScore[loser]['ties'] += 1
+
+        # Update score
+        else:
+            newScore = self.master.score
+            newScore[winner]['wins'] += 1
+            newScore[loser]['losses'] += 1
+
+        EndScreen(master=self.master, winner=winner, loser=loser, isDraw=isDraw).pack(expand=True)
         self.destroy()
 
     def goToMenu(self):
@@ -118,12 +125,13 @@ class GameScreen(tk.Frame):
 
 # End screen frame
 class EndScreen(tk.Frame):
-    def __init__(self, master, winner, loser):
+    def __init__(self, master, winner, loser, isDraw):
         super().__init__(master)
         self.master = master
         self.master['bg'] = GRAY
         self['bg'] = GREEN
 
+        self.isDraw = isDraw
         self.winner = winner
         self.loser = loser
 
@@ -150,7 +158,13 @@ class EndScreen(tk.Frame):
         bTies = score['bot']['ties']
 
         self.result = tk.Label(master=self, bg=GREEN, fg=WHITE, font=LARGE_FONT, padx=40, pady=40)
-        self.result['text'] = f'{self.winner} wins! {self.loser} losses!'
+        
+        if (self.isDraw):
+            self.result['text'] = f'Game ended in a Draw!'
+
+        else:
+            self.result['text'] = f'{self.winner} wins! {self.loser} losses!'
+
         self.result.pack()
 
         self.score = tk.Label(master=self, bg=GREEN, fg=WHITE, font=MEDIUM_FONT, padx=40, pady=40)
