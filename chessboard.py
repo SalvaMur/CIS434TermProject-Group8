@@ -1,6 +1,6 @@
 import tkinter as tk
 from copy import deepcopy
-from stockfish import Stockfish
+from stockfishBot import Bot
 from piece import createPiece
 
 # Colors
@@ -18,7 +18,7 @@ PUKE_GREEN = '#84b53f'
 PURPLE = '#e807ce'
 
 class Chessboard(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, playBot, botDiff):
         super().__init__(master)
         self.master = master
         self['width'] = 819
@@ -41,10 +41,11 @@ class Chessboard(tk.Frame):
         self.selPiece = None # Keeps track on what piece is selected. Modified by piece class
         
         self.isPlayerTurn = True # Keep track of player turns
+        self.playBot = playBot # Is player playing against bot?
+        self.botDiff = botDiff # Difficulty chosen for bot
 
-        # Initialize AI engine
-        self.stockfish = Stockfish(r"C:\stockfish_15.1_win_x64_popcnt\stockfish-windows-2022-x86-64-modern.exe") # FOR DEBUGGING, REMOVE FOR FINAL
-        # self.stockfish = Stockfish(r"PUT STOCKFISH EXECUTABLE FILEPATH HERE")
+        # Initialize AI engine if playing against bot
+        self.bot = Bot() if (self.playBot) else None
 
         self.createBoard()
         self.createPieces()

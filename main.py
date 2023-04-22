@@ -87,7 +87,7 @@ class GameScreen(tk.Frame):
         
     def createGame(self):
         # The chessboard the game will be played on
-        self.chessboard = Chessboard(master=self)
+        self.chessboard = Chessboard(master=self, playBot=self.playBot, botDiff=self.botDiff)
         self.chessboard.pack(expand=True, fill='both', side='left')
         self.chessboard.pack_propagate(0)
 
@@ -138,8 +138,6 @@ class EndScreen(tk.Frame):
         self.playBot = playBot
         self.botDiff = botDiff
 
-        print(f'Bot? {playBot}')
-
         self.isDraw = isDraw
         self.winner = winner
         self.loser = loser
@@ -177,8 +175,8 @@ class EndScreen(tk.Frame):
         self.result.pack()
 
         self.score = tk.Label(master=self, bg=GREEN, fg=WHITE, font=MEDIUM_FONT, padx=40, pady=40)
-        self.score['text'] = f'Player 1: {p1Wins} Win(s), {p1Loss} Loss(es), {p1Ties} Tie(s)\n'
-        self.score['text'] += f'Player 2: {p2Wins} Win(s), {p2Loss} Loss(es), {p2Ties} Tie(s)\n'
+        self.score['text'] = f'Player 1: {p1Wins} Win(s), {p1Loss} Loss(es), {p1Ties} Tie(s)\n\n'
+        self.score['text'] += f'Player 2: {p2Wins} Win(s), {p2Loss} Loss(es), {p2Ties} Tie(s)\n\n'
         self.score['text'] += f'Bot: {bWins} Win(s), {bLoss} Loss(es), {bTies} Tie(s)'
         self.score.pack()
 
