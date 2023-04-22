@@ -23,7 +23,7 @@ class MainMenu(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
-        
+
         self.master.geometry('800x600') # Change window geometry
 
         xOffset = (self.master.winfo_screenwidth() // 2) - (800 // 2)
@@ -43,17 +43,10 @@ class MainMenu(tk.Frame):
         self.selFrame = tk.Frame(master=self, bg=GREEN, pady=40)
 
         # PVP game mode button
-        self.pvp_button = tk.Button(master=self.selFrame, command=self.goToGame)
+        self.pvp_button = tk.Button(master=self.selFrame, command=lambda: self.goToGame(False, None))
         self.pvp_button.configure(bg=LIME, fg=GRAY, font=BUTTON_FONT)
         self.pvp_button['text'] = 'Player vs Player'
         self.pvp_button.grid(row=0, column=0, padx=20)
-
-        # WIP -----------------------------------------------
-        # PVAI game mode button
-        self.pvai_button = tk.Button(master=self.selFrame, command=None)
-        self.pvai_button.configure(bg=LIME, fg=GRAY, font=BUTTON_FONT)
-        self.pvai_button['text'] = 'Player vs AI'
-        self.pvai_button.grid(row=0, column=1, padx=20)
 
         # Dropdown list of AI difficulty. Defaults to Normal
         self.botDifficulty_list = ttk.Combobox(master=self.selFrame, state='readonly', font=LIST_FONT)
@@ -61,18 +54,28 @@ class MainMenu(tk.Frame):
         self.botDifficulty_list.current(1)
         self.botDifficulty_list.grid(row=0, column=2, padx=20)
 
+        # PVAI game mode button
+        self.pvai_button = tk.Button(master=self.selFrame, command=lambda: self.goToGame(True, self.botDifficulty_list.get()))
+        self.pvai_button.configure(bg=LIME, fg=GRAY, font=BUTTON_FONT)
+        self.pvai_button['text'] = 'Player vs AI'
+        self.pvai_button.grid(row=0, column=1, padx=20)
+
         # Pack selection frame to Menu screen
         self.selFrame.pack()
-        
-    def goToGame(self):
-        GameScreen(master=self.master).pack(expand=True, fill='both')
+
+    def goToGame(self, againstBot, botDiff):
+        GameScreen(master=self.master, playBot=againstBot, botDiff=botDiff).pack(expand=True, fill='both')
         self.destroy()
 
 # Game screen frame
 class GameScreen(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, playBot, botDiff):
         super().__init__(master)
         self.master = master
+
+        # for player playing against bot
+        self.playBot = playBot
+        self.botDiff = botDiff
 
         self.master.geometry('1365x768') # Change window geometry
 
@@ -116,7 +119,7 @@ class GameScreen(tk.Frame):
             newScore[winner]['wins'] += 1
             newScore[loser]['losses'] += 1
 
-        EndScreen(master=self.master, winner=winner, loser=loser, isDraw=isDraw).pack(expand=True)
+        EndScreen(master=self.master, winner=winner, loser=loser, isDraw=isDraw, playBot=self.playBot, botDiff=self.botDiff).pack(expand=True)
         self.destroy()
 
     def goToMenu(self):
@@ -125,11 +128,17 @@ class GameScreen(tk.Frame):
 
 # End screen frame
 class EndScreen(tk.Frame):
-    def __init__(self, master, winner, loser, isDraw):
+    def __init__(self, master, winner, loser, isDraw, playBot, botDiff):
         super().__init__(master)
         self.master = master
         self.master['bg'] = GRAY
         self['bg'] = GREEN
+
+        # For rematch button
+        self.playBot = playBot
+        self.botDiff = botDiff
+
+        print(f'Bot? {playBot}')
 
         self.isDraw = isDraw
         self.winner = winner
@@ -163,7 +172,7 @@ class EndScreen(tk.Frame):
             self.result['text'] = f'Game ended in a Draw!'
 
         else:
-            self.result['text'] = f'{self.winner} wins! {self.loser} losses!'
+            self.result['text'] = f'{self.winner} wins! {self.loser} loses!'
 
         self.result.pack()
 
@@ -183,7 +192,7 @@ class EndScreen(tk.Frame):
         self.menuBtn.grid(row=0, column=0, padx=20)
 
         # Rematch button
-        self.rematchBtn = tk.Button(master=self.selFrame, command=self.goToGame)
+        self.rematchBtn = tk.Button(master=self.selFrame, command=lambda: self.goToGame(self.playBot, self.botDiff))
         self.rematchBtn.configure(bg=LIME, fg=GRAY, font=BUTTON_FONT)
         self.rematchBtn['text'] = 'Rematch'
         self.rematchBtn.grid(row=0, column=1, padx=20)
@@ -191,8 +200,8 @@ class EndScreen(tk.Frame):
         # Pack selection frame to Menu screen
         self.selFrame.pack()
 
-    def goToGame(self):
-        GameScreen(master=self.master).pack(expand=True, fill='both')
+    def goToGame(self, playBot, botDiff):
+        GameScreen(master=self.master, playBot=playBot, botDiff=botDiff).pack(expand=True, fill='both')
         self.destroy()
 
     def goToMenu(self):

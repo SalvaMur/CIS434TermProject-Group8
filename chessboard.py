@@ -1,5 +1,6 @@
 import tkinter as tk
 from copy import deepcopy
+from stockfish import Stockfish
 from piece import createPiece
 
 # Colors
@@ -40,6 +41,10 @@ class Chessboard(tk.Frame):
         self.selPiece = None # Keeps track on what piece is selected. Modified by piece class
         
         self.isPlayerTurn = True # Keep track of player turns
+
+        # Initialize AI engine
+        self.stockfish = Stockfish(r"C:\stockfish_15.1_win_x64_popcnt\stockfish-windows-2022-x86-64-modern.exe") # FOR DEBUGGING, REMOVE FOR FINAL
+        # self.stockfish = Stockfish(r"PUT STOCKFISH EXECUTABLE FILEPATH HERE")
 
         self.createBoard()
         self.createPieces()
