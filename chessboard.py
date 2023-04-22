@@ -40,12 +40,13 @@ class Chessboard(tk.Frame):
         self.b_King = None # Reference to black king
         self.selPiece = None # Keeps track on what piece is selected. Modified by piece class
         
+        self.turn = 1 # The turn number. When player starts turn, increment turn number
         self.isPlayerTurn = True # Keep track of player turns
         self.playBot = playBot # Is player playing against bot?
         self.botDiff = botDiff # Difficulty chosen for bot
 
         # Initialize AI engine if playing against bot
-        self.bot = Bot() if (self.playBot) else None
+        self.bot = Bot(self.botDiff) if (self.playBot) else None
 
         self.createBoard()
         self.createPieces()
@@ -317,15 +318,43 @@ class Chessboard(tk.Frame):
         # If next player can't move any of their pieces, check for tie or loss
         if (len(canMove) == 0):
 
+            # Find out who the winner, loser, and players are
+            if (self.playBot):
+                result = ('player1', 'bot') if (self.isPlayerTurn) else ('bot', 'player1')
+            else:
+                result = ('player1', 'player2') if (self.isPlayerTurn) else ('player2', 'player1')
+
             # Next player's king is currently in check
             if (nextKing.inCheck):
                 print('[RESULT]: ', 'White Wins!' if (self.isPlayerTurn) else 'Black Wins!')
-                result = ('player1', 'player2') if (self.isPlayerTurn) else ('player2', 'player1')
                 self.master.updateWinner(result[0], result[1], False)
 
             # It is a draw
             else:
                 print('[RESULT]: It is a draw!')
-                self.master.updateWinner('player1', 'player2', True)
+                self.master.updateWinner(result[0], result[1], True)
 
         self.isPlayerTurn = not self.isPlayerTurn # Transition turn
+
+        # Increase turn number when player's turn starts
+        if (self.isPlayerTurn):
+            self.turn += 1
+
+        # If playing against bot, handle bot's turn
+        if (self.playBot and not self.isPlayerTurn):
+
+            # [0][0] - Row, [0][1] - Col, [1][0] - newRow, [1][1] - newCol
+            botMove = self.bot.getMove(self.board, self.turn)
+
+            botPiece = self.board[botMove[0][0]][botMove[0][1]]['piece']
+            newRow = botMove[1][0]
+            newCol = botMove[1][1]
+
+            x = self.boardTK[newRow][newCol]['center']['x'] 
+            y = self.boardTK[newRow][newCol]['center']['y'] 
+
+            # Move bot's piece to its selection
+            self.movePiece(botPiece, newRow, newCol, x, y)
+
+            # Transition turn back to player after bot is done
+            self.transistionTurn()

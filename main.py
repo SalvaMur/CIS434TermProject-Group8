@@ -167,7 +167,7 @@ class EndScreen(tk.Frame):
         self.result = tk.Label(master=self, bg=GREEN, fg=WHITE, font=LARGE_FONT, padx=40, pady=40)
         
         if (self.isDraw):
-            self.result['text'] = f'Game ended in a Draw!'
+            self.result['text'] = 'Game ended in a Draw!'
 
         else:
             self.result['text'] = f'{self.winner} wins! {self.loser} loses!'
