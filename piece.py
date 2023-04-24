@@ -41,25 +41,9 @@ class Piece:
     # WIP -------------------------------------------------
     def makeMoves(self, board):
         self.moveTable.clear()
-        if self.color == "white":
-            # Check if pawn can move forward 1 square
-            if board[self.row - 1][self.col]['piece'] is None:
-                self.moveTable[board[self.row - 1][self.col]['squareTag']] = {'row': self.row - 1, 'col': self.col}
-                # Check if pawn can move forward 2 squares on first move
-                if self.isFirstMove and board[self.row - 2][self.col]['piece'] is None:
-                    self.moveTable[board[self.row - 2][self.col]['squareTag']] = {'row': self.row - 2, 'col': self.col}
-            # Check if pawn can capture diagonally
-            if self.col > 0 and board[self.row - 1][self.col - 1]['pieceColor'] == "black":
-                self.moveTable[board[self.row - 1][self.col - 1]['squareTag']] = {'row': self.row - 1, 'col': self.col - 1}
-            if self.col < 7 and board[self.row - 1][self.col + 1]['pieceColor'] == "black":
-                self.moveTable[board[self.row - 1][self.col + 1]['squareTag']] = {'row': self.row - 1, 'col': self.col + 1}
-        else: # for black pawn
-            # Check if pawn can move forward 1 square
-            if self.row < 7 and board[self.row + 1][self.col]['piece'] is None:
-                self.moveTable[board[self.row + 1][self.col]['squareTag']] = {'row': self.row + 1, 'col': self.col}
-
-                self.moveTable[board[self.row + 1][self.col]['squareTag']] = {'row': self.row + 1, 'col': self.col}
-                # Check if pawn can move forward 2 squares on first move
-                if self.isFirstMove and board[self.row + 2][self.col]['piece'] is None:
-                    self.moveTable[board[self.row + 2][self.col]['squareTag']] = {'row': self.row + 2, 'col': self.col}
-
+        for i in board:
+            for j in board[i]:
+                if (board[i][j]['pieceColor'] == self.color):
+                    continue
+                
+                self.moveTable[board[i][j]['squareTag']] = {'row': i, 'col': j}
