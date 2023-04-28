@@ -1,5 +1,5 @@
 # Ignore pycache directory
 __pycache__
 
-# Ignore Stockfish directory
+# Ignore Stockfish directory NOTE: Must be installed for AI to work
 # stockfish_15.1_win_x64_popcnt
